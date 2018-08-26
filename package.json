@@ -1,0 +1,21 @@
+{
+  "name": "mozaik-ext-drive",
+  "version": "0.1.0",
+  "description": "Google Drive extension for Mozaik",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [
+    "mozaik",
+    "ext",
+    "google",
+    "drive"
+  ],
+  "author": "Juha Mustonen <juha.mustonen@iki.fi>",
+  "license": "MIT",
+  "dependencies": {
+    "google-auto-auth": "^0.10.1",
+    "googleapis": "^32.0.0"
+  }
+}
