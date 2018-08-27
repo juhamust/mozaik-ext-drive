@@ -4,7 +4,8 @@
   "description": "Google Drive extension for Mozaik",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node client.js",
+    "test": "jest tests"
   },
   "keywords": [
     "mozaik",
@@ -16,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "google-auto-auth": "^0.10.1",
-    "googleapis": "^32.0.0"
+    "googleapis": "^32.0.0",
+    "jest": "^23.5.0"
   }
 }

@@ -1,10 +1,17 @@
+const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 const googleAuth = require('google-auto-auth');
 
+const DEFAULT_FIELDS = 'id,title,mimeType,userPermission,editable,copyable,shared,fileSize';
+
+function required() {
+  throw new Error('Missing required param', this);
+}
+
 class Drive {
-  constructor(opts) {
-    this.keyFilepath = opts.keyFilepath;
+  constructor(keyFilepath=required()) {
+    this.keyFilepath = keyFilepath;
   }
 
   async getAuthorizedClient() {
@@ -29,7 +36,7 @@ class Drive {
           }
 
           this.client = google.drive({
-            version: 'v3',
+            version: 'v2', // v3
             auth: authClient,
           });
 
@@ -42,15 +49,18 @@ class Drive {
   async getFileNames() {
     const drive = await this.getAuthorizedClient();
     const res = await drive.files.list();
-    console.log('FILES', res.data.files);
+    return res.data.items || res.data.files;
+  }
+
+  async getFile(id) {
+    console.log('Downloading file', id);
+    const drive = await this.getAuthorizedClient();
+    const metadata = await drive.files.get({ fileId: id });
+    const res = await drive.files.get({ fileId: id, alt: 'media' });
+    return res.data;
   }
 }
 
-async function main() {
-  const drive = new Drive({
-    keyFilepath: process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, 'keys.json'),
-  });
-  return drive.getFileNames();
-}
-
-main().catch(console.error);
+module.exports = {
+  Drive,
+};
