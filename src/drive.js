@@ -21,7 +21,10 @@ class Drive {
 
     const authConfig = {};
     authConfig.keyFilename = this.keyFilepath;
-    authConfig.scopes = ['https://www.googleapis.com/auth/drive.readonly'];
+    authConfig.scopes = [
+      'https://www.googleapis.com/auth/drive.metadata.readonly',
+      'https://www.googleapis.com/auth/drive.readonly',
+    ];
     const auth = googleAuth(authConfig);
 
     return new Promise((resolve, reject) => {
@@ -36,7 +39,7 @@ class Drive {
           }
 
           this.client = google.drive({
-            version: 'v2', // v3
+            version: 'v3',
             auth: authClient,
           });
 
@@ -52,12 +55,30 @@ class Drive {
     return res.data.items || res.data.files;
   }
 
-  async getFile(id) {
-    console.log('Downloading file', id);
+  async getFileStream(id, currentHash=null) {
     const drive = await this.getAuthorizedClient();
-    const metadata = await drive.files.get({ fileId: id });
-    const res = await drive.files.get({ fileId: id, alt: 'media' });
-    return res.data;
+    const metadata = await drive.files.get({ fileId: id, fields: 'id,headRevisionId,name,mimeType,viewersCanCopyContent,version,webContentLink,md5Checksum', });
+
+    if (!currentHash || currentHash !== metadata.data.md5Checksum) {
+      const res = await drive.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
+      return res.data;
+    }
+  }
+
+  async writeFileStream(fileStream, targetPath) {
+    return new Promise(async (resolve, reject) => {
+      const dest = fs.createWriteStream(targetPath);
+      console.log(`Writing to ${targetPath}`);
+
+      fileStream
+        .on('end', () => {
+          resolve(targetPath);
+        })
+        .on('error', err => {
+          reject(err);
+        })
+        .pipe(dest);
+    });
   }
 }
 

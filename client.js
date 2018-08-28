@@ -7,11 +7,10 @@ async function main() {
     keyFilepath=process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, 'keys.json'),
   );
   const files = await client.getFileNames();
-  console.log('Files', files);
-  const tasks = files.filter(file => file.mimeType === 'image/jpeg').map(file => {
-    return client.getFile(file.id).then(data => {
-      fs.writeFileSync(path.join(__dirname, 'tmp', 'test.jpg'), data);
-    });
+  const tasks = files.filter(file => file.mimeType === 'image/jpeg').map(async file => {
+    const targetPath = path.join(__dirname, 'tmp', file.name);
+    const fileStream = await client.getFileStream(file.id);
+    return client.writeFileStream(fileStream, targetPath);
   });
 
   await Promise.all(tasks);
