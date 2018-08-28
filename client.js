@@ -10,7 +10,7 @@ async function main() {
   console.log('Files', files);
   const tasks = files.filter(file => file.mimeType === 'image/jpeg').map(file => {
     return client.getFile(file.id).then(data => {
-      fs.writeFileSync('test.jpg', data);
+      fs.writeFileSync(path.join(__dirname, 'tmp', 'test.jpg'), data);
     });
   });
 
