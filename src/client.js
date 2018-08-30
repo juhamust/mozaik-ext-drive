@@ -44,8 +44,9 @@ const client = mozaik => {
 
     // Create subdir if needed
     createDir(publicImagePath);
+    const driveClient = clientGetter(keyFilePath);
 
-    return clientGetter(keyFilePath)
+    return driveClient
     .getFiles()
     .then(fileNames => {
       const ready = fileNames
@@ -54,6 +55,7 @@ const client = mozaik => {
         driveClient.getFileStream(file.id)
         .then(fileStream => {
           const fileName = `${file.md5Checksum}.${file.fullFileExtension}`;
+          info(`Writing ${file.name}.${file.fullFileExtension} to ${fileName}`);
           return driveClient.writeFileStream(fileStream, fileName);
         });
       });
