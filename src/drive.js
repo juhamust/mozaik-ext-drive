@@ -12,6 +12,7 @@ const FIELDS = [
   'version',
   'webContentLink',
   'md5Checksum',
+  'fullFileExtension',
 ];
 
 function required() {
@@ -58,7 +59,7 @@ class Drive {
     });
   }
 
-  async getFileNames() {
+  async getFiles() {
     const drive = await this.getAuthorizedClient();
     const res = await drive.files.list();
     return res.data.items || res.data.files;

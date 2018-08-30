@@ -2,9 +2,25 @@
 
 require('isomorphic-fetch');
 const fs = require('fs');
+const path = require('path');
 const chalk = require('chalk');
 const drive = require('./drive');
 const config = require('./config');
+
+const SUPPORTED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+];
+
+function createDir(path) {
+  // If already exists, no-op
+  if (fs.existsSync(path)) {
+    return path;
+  }
+
+  fs.mkdirSync(path);
+  return path;
+}
 
 /**
  * @param {Mozaik} mozaik
@@ -15,26 +31,33 @@ const client = mozaik => {
   const info = msg => mozaik.logger.info(chalk.yellow(`[drive] ${msg}`));
   const error = msg => mozaik.logger.error(chalk.red(`[drive] ${msg}`));
 
+  /**
+   * Sync photos from Drive into local public directory
+   * where they can be hosted.
+   */
   const syncFiles = () => {
     const keyFilePath = config.get('drive.keyFilePath');
-    const publicImagePath = config.get('drive.publicDir');
+    const publicImagePath = path.join(config.get('drive.publicDir'), 'mozaik-ext-drive');
     // Allow passing the Drive client via mozaik (for testing purposes)
     const clientGetter = mozaik.loadDriveClient || new drive.Drive;
     info(`Syncing files using ${keyFilePath}`);
 
-    const tempPath = fs.mkdtempSync(publicImagePath);
-    info(`Created dir: ${tempPath}`);
+    // Create subdir if needed
+    createDir(publicImagePath);
 
     return clientGetter(keyFilePath)
-    .getFileNames()
+    .getFiles()
     .then(fileNames => {
-      const progress = fileNames.map(file => {
+      const ready = fileNames
+      .filter(file => SUPPORTED_MIME_TYPES.indexOf(file.mimeType) !== -1)
+      .map(file => {
         driveClient.getFileStream(file.id)
         .then(fileStream => {
-          return driveClient.writeFileStream(fileStream);
+          const fileName = `${file.md5Checksum}.${file.fullFileExtension}`;
+          return driveClient.writeFileStream(fileStream, fileName);
         });
       });
-      return Promise.all(progress);
+      return Promise.all(ready);
     });
   };
 
