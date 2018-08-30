@@ -1,4 +1,5 @@
-const convict = require('convict')
+const path = require('path');
+const convict = require('convict');
 
 const config = convict({
   drive: {
@@ -8,6 +9,12 @@ const config = convict({
       format: String,
       env: 'DRIVE_KEY_FILE_PATH',
     },
+    publicDir: {
+      doc: 'Folder that is hosted by Mozaik server',
+      default: path.join(process.cwd(), 'build'),
+      format: String,
+      env: 'MOZAIK_PUBLIC_DIR',
+    }
   },
 });
 

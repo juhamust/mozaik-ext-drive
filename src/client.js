@@ -1,6 +1,7 @@
 'use strict'
 
 require('isomorphic-fetch');
+const fs = require('fs');
 const chalk = require('chalk');
 const drive = require('./drive');
 const config = require('./config');
@@ -16,9 +17,13 @@ const client = mozaik => {
 
   const syncFiles = () => {
     const keyFilePath = config.get('drive.keyFilePath');
+    const publicImagePath = config.get('drive.publicDir');
     // Allow passing the Drive client via mozaik (for testing purposes)
     const clientGetter = mozaik.loadDriveClient || new drive.Drive;
     info(`Syncing files using ${keyFilePath}`);
+
+    const tempPath = fs.mkdtempSync(publicImagePath);
+    info(`Created dir: ${tempPath}`);
 
     return clientGetter(keyFilePath)
     .getFileNames()
