@@ -3,7 +3,16 @@ const path = require('path');
 const { google } = require('googleapis');
 const googleAuth = require('google-auto-auth');
 
-const DEFAULT_FIELDS = 'id,title,mimeType,userPermission,editable,copyable,shared,fileSize';
+const FIELDS = [
+  'id',
+  'headRevisionId',
+  'name',
+  'mimeType',
+  'viewersCanCopyContent',
+  'version',
+  'webContentLink',
+  'md5Checksum',
+];
 
 function required() {
   throw new Error('Missing required param', this);
@@ -57,7 +66,7 @@ class Drive {
 
   async getFileStream(id, currentHash=null) {
     const drive = await this.getAuthorizedClient();
-    const metadata = await drive.files.get({ fileId: id, fields: 'id,headRevisionId,name,mimeType,viewersCanCopyContent,version,webContentLink,md5Checksum', });
+    const metadata = await drive.files.get({ fileId: id, fields: FIELDS.join(','), });
 
     if (!currentHash || currentHash !== metadata.data.md5Checksum) {
       const res = await drive.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
